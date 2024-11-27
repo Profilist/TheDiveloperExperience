@@ -3,10 +3,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 
-const OSCILLATION_SPEED = 2
+const OSCILLATION_SPEED = 10
 const FRAME_RATE = 60
 
-export default function Game() {
+interface Level2Props {
+  onComplete: () => void;
+}
+
+export default function Level2({ onComplete }: Level2Props) {
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'scored'>('idle')
   const [position, setPosition] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -59,7 +63,8 @@ export default function Game() {
   }
 
   return (
-    <div className="w-full max-w-2xl">
+    <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
+      <h1 className="text-2xl font-bold text-center mb-4">Level 2</h1>
       <div className="mb-4 text-center">
         {gameState === 'idle' && <p>You must have done this before</p>}
         {gameState === 'playing' && <p>Click stop when the div is centered</p>}
@@ -77,7 +82,7 @@ export default function Game() {
           style={{ transform: `translateX(${position}px)` }}
         />
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-4">
         {gameState === 'idle' && (
           <Button onClick={startGame}>Start Game</Button>
         )}
@@ -85,9 +90,16 @@ export default function Game() {
           <Button onClick={stopGame}>Stop</Button>
         )}
         {gameState === 'scored' && (
-          <Button onClick={startGame}>Play Again</Button>
+          <>
+            <Button onClick={startGame}>Try Again</Button>
+            {score && score[0] >= 90 && (
+              <Button onClick={onComplete} variant="secondary">
+                Next Level
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>
   )
-}
+} 
