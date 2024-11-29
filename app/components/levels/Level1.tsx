@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import Leaderboard from '../Leaderboard';
 
 const OSCILLATION_SPEED = 3
 const FRAME_RATE = 60
@@ -12,6 +16,13 @@ interface Level1Props {
 }
 
 export default function Level1({ onComplete, onHome }: Level1Props) {
+  const { user, isSignedIn } = useUser();
+  const createScore = useMutation(api.scores.createScore);
+  const getUser = useQuery(
+    api.users.getUserByClerkId,
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+  const createConvexUser = useMutation(api.users.createUser);
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'scored'>('idle')
   const [position, setPosition] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -50,7 +61,7 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
     setGameState('playing')
   }
 
-  const stopGame = () => {
+  const stopGame = async () => {
     if (gameState === 'playing') {
       setGameState('scored')
       const containerWidth = containerRef.current?.clientWidth || 0
@@ -60,6 +71,25 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
       const maxDistance = containerWidth / 2
       const normalizedScore = Math.round((1 - distanceFromCenter / maxDistance) * 100)
       setScore([normalizedScore, Math.round(distanceFromCenter)])
+
+      if (isSignedIn && user) {
+        let convexUserId = getUser?._id;
+        if (!convexUserId) {
+          convexUserId = await createConvexUser({
+            clerkId: user.id,
+            name: user.fullName || "",
+            email: user.emailAddresses[0]?.emailAddress || "",
+            image: user.imageUrl,
+          });
+        }
+        
+        await createScore({
+          score: normalizedScore,
+          userId: convexUserId,
+          levelId: 1,
+          distanceFromCenter: Math.round(distanceFromCenter),
+        });
+      }
     }
   }
 
@@ -102,6 +132,8 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
           </>
         )}
       </div>
+
+      <Leaderboard levelId={1} />
     </div>
   )
 } 
