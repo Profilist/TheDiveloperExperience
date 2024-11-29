@@ -3,12 +3,18 @@
 import { useState, useEffect } from 'react'
 import Level1 from '@/app/components/levels/Level1'
 import Level2 from '@/app/components/levels/Level2'
+import Level3 from '@/app/components/levels/Level3'
 import { Button } from '@/components/ui/button'
+
+interface LevelProps {
+  onComplete: () => void;
+  onHome: () => void;
+}
 
 interface LevelInfo {
   id: number;
   name: string;
-  component: React.ComponentType<{ onComplete: () => void }>;
+  component: React.ComponentType<LevelProps>;
   unlocked: boolean;
 }
 
@@ -16,19 +22,20 @@ export default function Home() {
   const [currentLevel, setCurrentLevel] = useState<number | null>(null)
   const [levels, setLevels] = useState<LevelInfo[]>([
     { id: 1, name: 'Level 1', component: Level1, unlocked: true },
-    { id: 2, name: 'Level 2', component: Level2, unlocked: false },
+    { id: 2, name: 'Level 2', component: Level2, unlocked: true }, // TODO: Unlock after level 1 is complete
+    { id: 3, name: 'Level 3', component: Level3, unlocked: true },
   ])
 
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('gameProgress')
-    if (savedProgress) {
-      const parsed = JSON.parse(savedProgress)
-      setLevels(levels.map((level, index) => ({
-        ...level,
-        unlocked: parsed[index].unlocked
-      })))
-    }
-  }, [])
+  // useEffect(() => {
+  //   const savedProgress = localStorage.getItem('gameProgress')
+  //   if (savedProgress) {
+  //     const parsed = JSON.parse(savedProgress)
+  //     setLevels(levels.map((level, index) => ({
+  //       ...level,
+  //       unlocked: parsed[index].unlocked
+  //     })))
+  //   }
+  // }, [])
 
   const handleLevelComplete = () => {
     const nextLevelIndex = currentLevel !== null ? currentLevel : 0
@@ -45,10 +52,17 @@ export default function Home() {
     setCurrentLevel(null) 
   }
 
+  const handleHome = () => {
+    setCurrentLevel(null)
+  }
+
   if (currentLevel !== null && currentLevel < levels.length) {
     const LevelComponent = levels[currentLevel].component
     console.log(levels[currentLevel].component)
-    return <LevelComponent onComplete={handleLevelComplete} />
+    return <LevelComponent 
+      onComplete={handleLevelComplete} 
+      onHome={handleHome}
+    />
   }
 
   return (

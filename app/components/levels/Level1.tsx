@@ -3,14 +3,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 
-const OSCILLATION_SPEED = 2
+const OSCILLATION_SPEED = 3
 const FRAME_RATE = 60
 
 interface Level1Props {
   onComplete: () => void;
+  onHome: () => void;
 }
 
-export default function Level1({ onComplete }: Level1Props) {
+export default function Level1({ onComplete, onHome }: Level1Props) {
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'scored'>('idle')
   const [position, setPosition] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -66,7 +67,7 @@ export default function Level1({ onComplete }: Level1Props) {
     <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
       <h1 className="text-2xl font-bold text-center mb-4">Level 1</h1>
       <div className="mb-4 text-center">
-        {gameState === 'idle' && <p>You must have done this before</p>}
+        {gameState === 'idle' && <p>Does this remind you of anything?</p>}
         {gameState === 'playing' && <p>Click stop when the div is centered</p>}
         {gameState === 'scored' && score && (
           <p>Your score: {score[0]}% ({score[1]}px from center)</p>
@@ -83,6 +84,7 @@ export default function Level1({ onComplete }: Level1Props) {
         />
       </div>
       <div className="flex justify-center gap-4">
+        <Button onClick={onHome} variant="outline">Home</Button>
         {gameState === 'idle' && (
           <Button onClick={startGame}>Start Game</Button>
         )}

@@ -8,9 +8,10 @@ const FRAME_RATE = 60
 
 interface Level2Props {
   onComplete: () => void;
+  onHome: () => void;
 }
 
-export default function Level2({ onComplete }: Level2Props) {
+export default function Level2({ onComplete, onHome }: Level2Props) {
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'scored'>('idle')
   const [position, setPosition] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -66,8 +67,8 @@ export default function Level2({ onComplete }: Level2Props) {
     <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
       <h1 className="text-2xl font-bold text-center mb-4">Level 2</h1>
       <div className="mb-4 text-center">
-        {gameState === 'idle' && <p>You must have done this before</p>}
-        {gameState === 'playing' && <p>Click stop when the div is centered</p>}
+        {gameState === 'idle' && <p>Was that too easy?</p>}
+        {gameState === 'playing' && <p>There's no way this is stopping you right...</p>}
         {gameState === 'scored' && score && (
           <p>Your score: {score[0]}% ({score[1]}px from center)</p>
         )}
@@ -78,11 +79,12 @@ export default function Level2({ onComplete }: Level2Props) {
       >
         <div
           ref={movingDivRef}
-          className="absolute top-0 h-full w-16 bg-blue-500"
+          className="absolute top-0 h-full w-8 bg-blue-500"
           style={{ transform: `translateX(${position}px)` }}
         />
       </div>
       <div className="flex justify-center gap-4">
+        <Button onClick={onHome} variant="outline">Home</Button>
         {gameState === 'idle' && (
           <Button onClick={startGame}>Start Game</Button>
         )}
