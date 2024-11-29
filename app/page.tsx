@@ -6,6 +6,7 @@ import Level1 from '@/app/components/levels/Level1'
 import Level2 from '@/app/components/levels/Level2'
 import Level3 from '@/app/components/levels/Level3'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 interface LevelProps {
   onComplete: () => void;
@@ -23,21 +24,10 @@ export default function Home() {
   const { isSignedIn, user } = useUser();
   const [currentLevel, setCurrentLevel] = useState<number | null>(null)
   const [levels, setLevels] = useState<LevelInfo[]>([
-    { id: 1, name: 'Level 1 (Student)', component: Level1, unlocked: true },
-    { id: 2, name: 'Level 2 (Junior Developer)', component: Level2, unlocked: false }, 
-    { id: 3, name: 'Level 3 (Senior Developer)', component: Level3, unlocked: false },
+    { id: 1, name: 'Level 1 (Baby Gronk)', component: Level1, unlocked: true },
+    { id: 2, name: 'Level 2 (Sigma)', component: Level2, unlocked: false }, 
+    { id: 3, name: "Level 3 (Those who know 💀)", component: Level3, unlocked: false },
   ])
-
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('gameProgress')
-    if (savedProgress) {
-      const parsed = JSON.parse(savedProgress)
-      setLevels(levels.map((level, index) => ({
-        ...level,
-        unlocked: parsed[index].unlocked
-      })))
-    }
-  }, [])
 
   const handleLevelComplete = () => {
     const nextLevelIndex = currentLevel !== null ? currentLevel : 0
@@ -70,7 +60,10 @@ export default function Home() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">The Diveloper Experience</h1>
+        <div className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Logo" width={32} height={32} />
+          <h1 className="text-3xl font-bold">The &lt;div&gt;eloper Experience</h1>
+        </div>
         <div>
           {!isSignedIn ? (
             <SignInButton mode="modal">
@@ -88,43 +81,49 @@ export default function Home() {
       </div>
       
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-        <div className="max-w-2xl w-full text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">The &lt;div&gt;eloper Experience</h1>
-          <p className="text-gray-600 mb-8">
-            Are you a real developer if you can't center a div?
-          </p>
+        <div className={`max-w-2xl w-full text-center mb-12 ${!levels.every(level => level.unlocked) ? 'translate-x-40' : ''}`}>
+          <h1 className="text-4xl font-bold mb-4">Are you a real developer if you can't center a div?</h1>
         </div>
 
         <div className="w-full max-w-4xl">
           <div className="grid grid-cols-1 gap-6">
-            {levels.map((level, index) => (
-              <div 
-                key={level.id}
-                className={`
-                  p-8 rounded-lg transition-all duration-200
-                  ${level.unlocked 
-                    ? 'bg-white shadow-lg hover:shadow-xl' 
-                    : 'bg-gray-100 opacity-75'}
-                `}
-              >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold">{level.name}:</h2>
-                  <Button
-                    onClick={() => setCurrentLevel(index)}
-                    disabled={!level.unlocked}
-                    variant={level.unlocked ? "default" : "secondary"}
-                    className={`
-                      px-8 py-2
-                      ${level.unlocked 
-                        ? 'hover:scale-105 transition-transform' 
-                        : 'cursor-not-allowed'}
-                    `}
-                  >
-                    {level.unlocked ? 'Play' : 'Locked'}
-                  </Button>
+            {levels.map((level, index) => {
+              const isBeaten = index < levels.length - 1 ? levels[index + 1].unlocked : false;
+              
+              return (
+                <div 
+                  key={level.id}
+                  className={`
+                    p-8 rounded-lg transition-all duration-500 ease-in-out
+                    ${level.unlocked 
+                      ? 'bg-white shadow-lg hover:shadow-xl' 
+                      : 'bg-gray-100 opacity-75'}
+                    ${index === 0 ? `translate-x-${isBeaten ? '0' : '40'}` : ''}
+                    ${index === 1 ? `-translate-x-${isBeaten ? '0' : '40'}` : ''}
+                    ${index === 2 ? `translate-x-${isBeaten ? '0' : '20'}` : ''}
+                    ${index === 3 ? `-translate-x-${isBeaten ? '0' : '12'}` : ''}
+                    ${index === 4 ? `translate-x-${isBeaten ? '0' : '24'}` : ''}
+                  `}
+                >
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-semibold">{level.name}:</h2>
+                    <Button
+                      onClick={() => setCurrentLevel(index)}
+                      disabled={!level.unlocked}
+                      variant={level.unlocked ? "default" : "secondary"}
+                      className={`
+                        px-8 py-2
+                        ${level.unlocked 
+                          ? 'hover:scale-105 transition-transform' 
+                          : 'cursor-not-allowed'}
+                      `}
+                    >
+                      {level.unlocked ? 'Play' : 'Locked'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
