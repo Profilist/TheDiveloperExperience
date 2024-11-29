@@ -34,14 +34,34 @@ export const createScore = mutation({
     distanceFromCenter: v.number(),
   },
   handler: async (ctx, args) => {
-    const scoreId = await ctx.db.insert("score", {
+    // Find existing score for this user and level
+    const existingScore = await ctx.db
+      .query("score")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .filter((q) => q.eq(q.field("levelId"), args.levelId))
+      .first();
+
+    // If there's an existing score and it's higher, don't update
+    if (existingScore && existingScore.score >= args.score) {
+      return existingScore._id;
+    }
+
+    // If there's an existing score but the new score is higher, update it
+    if (existingScore) {
+      return await ctx.db.patch(existingScore._id, {
+        score: args.score,
+        distanceFromCenter: args.distanceFromCenter,
+      });
+    }
+
+    // If no existing score, create a new one
+    return await ctx.db.insert("score", {
       score: args.score,
       userId: args.userId,
       levelId: args.levelId,
       distanceFromCenter: args.distanceFromCenter,
       createdAt: new Date().toISOString(),
     });
-    return scoreId;
   },
 });
 

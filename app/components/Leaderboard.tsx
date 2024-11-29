@@ -11,8 +11,7 @@ export default function Leaderboard({ levelId }: LeaderboardProps) {
   const scores = useQuery(api.scores.getScoresByLevel, { levelId });
 
   if (!scores) return null;
-
-  // Sort scores by highest first
+  
   const sortedScores = [...scores].sort((a, b) => b.score - a.score);
 
   return (

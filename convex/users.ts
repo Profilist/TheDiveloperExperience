@@ -28,3 +28,26 @@ export const getUserByClerkId = query({
       .first();
   },
 });
+
+export const updateUserProgress = mutation({
+  args: {
+    clerkId: v.string(),
+    progress: v.array(v.object({
+      id: v.number(),
+      name: v.string(),
+      unlocked: v.boolean()
+    }))
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("user")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) return null;
+    
+    return await ctx.db.patch(user._id, {
+      progress: args.progress
+    });
+  },
+});

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: "Rouge Script", cursive;
+  font-family: "Comic Neue", cursive;
 }
 
 @layer base {

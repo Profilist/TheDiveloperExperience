@@ -8,7 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import Leaderboard from '../Leaderboard';
 
 const OSCILLATION_SPEED = 10
-const FRAME_RATE = 60
+const FRAME_RATE = 120
 
 interface Level2Props {
   onComplete: () => void;
@@ -124,7 +124,7 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
         {gameState === 'scored' && (
           <>
             <Button onClick={startGame}>Try Again</Button>
-            {score && score[0] >= 90 && (
+            {score && score[0] >= 95 && (
               <Button onClick={onComplete} variant="secondary">
                 Next Level
               </Button>

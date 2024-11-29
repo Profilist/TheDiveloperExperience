@@ -6,20 +6,21 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import Leaderboard from '../Leaderboard';
+import Image from 'next/image';
 
-const OSCILLATION_SPEED = 40    // Blue
-const OSCILLATION_SPEED_2 = 15  // Red
-const OSCILLATION_SPEED_3 = 7   // Green
-const OSCILLATION_SPEED_4 = 25  // Purple
-const OSCILLATION_SPEED_5 = 17   // Orange
+const OSCILLATION_SPEED = 100    // Blue
+const OSCILLATION_SPEED_2 = 70  // Red
+const OSCILLATION_SPEED_3 = 80  // Green
+const OSCILLATION_SPEED_4 = 120  // Purple
+const OSCILLATION_SPEED_5 = 50   // Orange
 const FRAME_RATE = 60
 
-interface Level3Props {
+interface Level4Props {
   onComplete: () => void;
   onHome: () => void;
 }
 
-export default function Level3({ onComplete, onHome }: Level3Props) {
+export default function Level4({ onComplete, onHome }: Level4Props) {
   const { user, isSignedIn } = useUser();
   const createScore = useMutation(api.scores.createScore);
   const getUser = useQuery(
@@ -175,7 +176,7 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
         await createScore({
           score: normalizedScore,
           userId: convexUserId,
-          levelId: 3,
+          levelId: 4,
           distanceFromCenter: Math.round(distanceFromCenter),
         });
       }
@@ -184,10 +185,10 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
 
   return (
     <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
-      <h1 className="text-2xl font-bold text-center mb-4">Level 3</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">Level 4</h1>
       <div className="mb-4 text-center">
-        {gameState === 'idle' && <p>Click stop when the <span className="text-blue-500">BLUE</span> div is centered</p>}
-        {gameState === 'playing' && <p>Too fast for you?</p>}
+        {gameState === 'idle' && <p>Let LePookie Bear guide you to victory</p>}
+        {gameState === 'playing' && <p>My glorious king would get 100%</p>}
         {gameState === 'scored' && score && (
           <p>Your score: {score[0]}% ({score[1]}px from center)</p>
         )}
@@ -241,8 +242,17 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
           </>
         )}
       </div>
+      <div className="mt-8 flex justify-center">
+        <Image 
+          src="/sunshine.webp"
+          alt="Sunshine"
+          width={200}
+          height={200}
+          priority
+        />
+      </div>
 
-      <Leaderboard levelId={3} />
+      <Leaderboard levelId={4} />
     </div>
   )
 } 

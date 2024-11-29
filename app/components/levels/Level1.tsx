@@ -124,7 +124,7 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
         {gameState === 'scored' && (
           <>
             <Button onClick={startGame}>Try Again</Button>
-            {score && score[0] >= 90 && (
+            {score && score[0] >= 95 && (
               <Button onClick={onComplete} variant="secondary">
                 Next Level
               </Button>

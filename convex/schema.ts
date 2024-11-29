@@ -17,6 +17,11 @@ export default defineSchema({
     email: v.string(),
     clerkId: v.string(),
     image: v.optional(v.string()),
+    progress: v.optional(v.array(v.object({
+      id: v.number(),
+      name: v.string(),
+      unlocked: v.boolean()
+    }))),
   }),
 });
  

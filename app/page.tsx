@@ -5,8 +5,11 @@ import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import Level1 from '@/app/components/levels/Level1'
 import Level2 from '@/app/components/levels/Level2'
 import Level3 from '@/app/components/levels/Level3'
+import Level4 from '@/app/components/levels/Level4'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface LevelProps {
   onComplete: () => void;
@@ -27,10 +30,30 @@ export default function Home() {
     { id: 1, name: 'Level 1 (Baby Gronk)', component: Level1, unlocked: true },
     { id: 2, name: 'Level 2 (Sigma)', component: Level2, unlocked: false }, 
     { id: 3, name: "Level 3 (Those who know 💀)", component: Level3, unlocked: false },
+    { id: 4, name: "Level 4 (Boy oh boy where do I even begin. Lebron... honey, my pookie bear. I have loved you ever since I first laid eyes on you. The way you drive into the paint and strike fear into your enemies eyes. Your silky smooth touch around the rim, and that gorgeous jumpshot. I would do anything for you.)", component: Level4, unlocked: false },
   ])
 
-  const handleLevelComplete = () => {
+  const userProgress = useQuery(api.users.getUserByClerkId, { 
+    clerkId: user?.id ?? "skip" 
+  });
+  const updateProgress = useMutation(api.users.updateUserProgress);
+
+  const [lastLevelBeaten, setLastLevelBeaten] = useState(false);
+
+  useEffect(() => {
+    if (userProgress?.progress) {
+      setLevels(prev => prev.map(level => {
+        const savedLevel = userProgress.progress?.find(p => p.id === level.id);
+        return savedLevel ? { ...level, unlocked: savedLevel.unlocked } : level;
+      }));
+    }
+  }, [userProgress]);
+
+  const handleLevelComplete = async () => {
     const nextLevelIndex = currentLevel !== null ? currentLevel : 0
+    if (nextLevelIndex === levels.length - 1) {
+      setLastLevelBeaten(true);
+    }
     if (nextLevelIndex < levels.length - 1) {
       const updatedLevels = levels.map((level, index) => {
         if (index === nextLevelIndex + 1) {
@@ -39,13 +62,24 @@ export default function Home() {
         return level
       })
       setLevels(updatedLevels)
-      localStorage.setItem('gameProgress', JSON.stringify(updatedLevels))
+      
+      if (isSignedIn && user) {
+        await updateProgress({
+          clerkId: user.id,
+          progress: updatedLevels.map(({ id, name, unlocked }) => ({
+            id,
+            name,
+            unlocked
+          }))
+        });
+      }
     }
     setCurrentLevel(null) 
   }
 
   const handleHome = () => {
     setCurrentLevel(null)
+    setLastLevelBeaten(false)
   }
 
   if (currentLevel !== null && currentLevel < levels.length) {
@@ -81,14 +115,20 @@ export default function Home() {
       </div>
       
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-        <div className={`max-w-2xl w-full text-center mb-12 ${!levels.every(level => level.unlocked) ? 'translate-x-40' : ''}`}>
-          <h1 className="text-4xl font-bold mb-4">Are you a real developer if you can't center a div?</h1>
+        <div className={`max-w-2xl w-full text-center mb-12 ${!lastLevelBeaten ? 'translate-x-40' : ''}`}>
+          <h1 className="text-4xl font-bold mb-4">
+            {lastLevelBeaten 
+              ? "Wow! Guess you are a real developer!"
+              : "Are you a real developer if you can't center a div?"}
+          </h1>
         </div>
 
         <div className="w-full max-w-4xl">
           <div className="grid grid-cols-1 gap-6">
             {levels.map((level, index) => {
-              const isBeaten = index < levels.length - 1 ? levels[index + 1].unlocked : false;
+              const isBeaten = index === levels.length - 1 
+                ? lastLevelBeaten 
+                : (index < levels.length - 1 && levels[index + 1].unlocked);
               
               return (
                 <div 
@@ -98,11 +138,10 @@ export default function Home() {
                     ${level.unlocked 
                       ? 'bg-white shadow-lg hover:shadow-xl' 
                       : 'bg-gray-100 opacity-75'}
-                    ${index === 0 ? `translate-x-${isBeaten ? '0' : '40'}` : ''}
-                    ${index === 1 ? `-translate-x-${isBeaten ? '0' : '40'}` : ''}
-                    ${index === 2 ? `translate-x-${isBeaten ? '0' : '20'}` : ''}
-                    ${index === 3 ? `-translate-x-${isBeaten ? '0' : '12'}` : ''}
-                    ${index === 4 ? `translate-x-${isBeaten ? '0' : '24'}` : ''}
+                    ${!isBeaten && index === 0 ? `translate-x-[160px]` : ''}
+                    ${!isBeaten && index === 1 ? `-translate-x-[160px]` : ''}
+                    ${!isBeaten && index === 2 ? `translate-x-[80px]` : ''}
+                    ${!isBeaten && index === 3 ? `-translate-x-[80px]` : ''}
                   `}
                 >
                   <div className="flex items-center justify-between">
@@ -118,7 +157,7 @@ export default function Home() {
                           : 'cursor-not-allowed'}
                       `}
                     >
-                      {level.unlocked ? 'Play' : 'Locked'}
+                      {level.unlocked ? 'Start' : 'Locked'}
                     </Button>
                   </div>
                 </div>
