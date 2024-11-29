@@ -30,6 +30,20 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
   const [score, setScore] = useState<[number, number] | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const movingDivRef = useRef<HTMLDivElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopCurrentAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCurrentAudio();
+    };
+  }, []);
 
   useEffect(() => {
     if (gameState === 'playing') {
@@ -56,6 +70,14 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
   }, [gameState, direction])
 
   const startGame = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/sounds/thickofit.mp3');
+      audioRef.current.volume = 0.1
+      audioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
+    }
+    
     setScore(null)
     setPosition(0)
     setDirection(1)
@@ -72,6 +94,15 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
       const maxDistance = containerWidth / 2
       const normalizedScore = Math.round((1 - distanceFromCenter / maxDistance) * 100)
       setScore([normalizedScore, Math.round(distanceFromCenter)])
+
+      if (normalizedScore >= 95) {
+        stopCurrentAudio();
+        audioRef.current = new Audio('/sounds/fromthescreen.mp3');
+        audioRef.current.volume = 0.1;
+        audioRef.current.play().catch(error => {
+          console.log('Audio playback failed:', error);
+        });
+      }
 
       if (isSignedIn && user) {
         let convexUserId = getUser?._id;
@@ -94,12 +125,22 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
     }
   }
 
+  const handleHome = () => {
+    stopCurrentAudio();
+    onHome();
+  }
+
+  const handleComplete = () => {
+    stopCurrentAudio();
+    onComplete();
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
       <h1 className="text-2xl font-bold text-center mb-4">Level 1</h1>
       <div className="mb-4 text-center">
-        {gameState === 'idle' && <p>Does this remind you of anything?</p>}
-        {gameState === 'playing' && <p>Click stop when the div is centered</p>}
+        {gameState === 'idle' && <p>Click stop when the div is centered</p>}
+        {gameState === 'playing' && <p>From the screen 📺 to the ring 🥊 to the pen 🖊️ to the king 👑! Where's my crown 👑 🤷‍♂️ that's my bling 💍</p>}
         {gameState === 'scored' && score && (
           <p>Your score: {score[0]}% ({score[1]}px from center)</p>
         )}
@@ -115,7 +156,7 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
         />
       </div>
       <div className="flex justify-center gap-4">
-        <Button onClick={onHome} variant="outline">Home</Button>
+        <Button onClick={handleHome} variant="outline">Home</Button>
         {gameState === 'idle' && (
           <Button onClick={startGame}>Start Game</Button>
         )}
@@ -126,12 +167,22 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
           <>
             <Button onClick={startGame}>Try Again</Button>
             {score && score[0] >= 95 && (
-              <Button onClick={onComplete} variant="secondary">
+              <Button onClick={handleComplete} variant="secondary">
                 Next Level
               </Button>
             )}
           </>
         )}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Image 
+          src={gameState === 'playing' || gameState === 'idle' || (score && score[0] >= 95) ? "/ksi3.jpg" : "/ksi2.webp"}
+          alt=""
+          width={200}
+          height={200}
+          priority
+        />
       </div>
 
       <Leaderboard levelId={1} />

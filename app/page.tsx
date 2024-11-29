@@ -28,7 +28,7 @@ export default function Home() {
   const { isSignedIn, user } = useUser();
   const [currentLevel, setCurrentLevel] = useState<number | null>(null)
   const [levels, setLevels] = useState<LevelInfo[]>([
-    { id: 1, name: 'Level 1 (Baby Gronk)', component: Level1, unlocked: true, isBeaten: false },
+    { id: 1, name: "Level 1 (From the screen 📺 to the ring 🥊 to the pen 🖊️ to the king 👑! Where's my crown 👑 🤷‍♂️ that's my bling 💍)", component: Level1, unlocked: true, isBeaten: false },
     { id: 2, name: 'Level 2 (Sigma)', component: Level2, unlocked: false, isBeaten: false }, 
     { id: 3, name: "Level 3 (Those who know 💀)", component: Level3, unlocked: false, isBeaten: false },
     { id: 4, name: "Level 4 (Boy oh boy where do I even begin. Lebron... honey, my pookie bear. I have loved you ever since I first laid eyes on you. The way you drive into the paint and strike fear into your enemies eyes. Your silky smooth touch around the rim, and that gorgeous jumpshot. I would do anything for you.)", component: Level4, unlocked: false, isBeaten: false },
@@ -95,9 +95,15 @@ export default function Home() {
   };
 
   const handleHome = () => {
-    setCurrentLevel(null)
-    setLastLevelBeaten(false)
-  }
+    setCurrentLevel(null);
+    const hasBeatenLevel = levels.some(level => level.isBeaten);
+    setLastLevelBeaten(hasBeatenLevel);
+  };
+
+  useEffect(() => {
+    const hasBeatenLevel = levels.some(level => level.isBeaten);
+    setLastLevelBeaten(hasBeatenLevel);
+  }, [levels]);
 
   if (currentLevel !== null && currentLevel < levels.length) {
     const LevelComponent = levels[currentLevel].component
