@@ -20,7 +20,8 @@ export default defineSchema({
     progress: v.optional(v.array(v.object({
       id: v.number(),
       name: v.string(),
-      unlocked: v.boolean()
+      unlocked: v.boolean(),
+      isBeaten: v.boolean(),
     }))),
   }),
 });

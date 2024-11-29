@@ -21,16 +21,17 @@ interface LevelInfo {
   name: string;
   component: React.ComponentType<LevelProps>;
   unlocked: boolean;
+  isBeaten: boolean;
 }
 
 export default function Home() {
   const { isSignedIn, user } = useUser();
   const [currentLevel, setCurrentLevel] = useState<number | null>(null)
   const [levels, setLevels] = useState<LevelInfo[]>([
-    { id: 1, name: 'Level 1 (Baby Gronk)', component: Level1, unlocked: true },
-    { id: 2, name: 'Level 2 (Sigma)', component: Level2, unlocked: false }, 
-    { id: 3, name: "Level 3 (Those who know 💀)", component: Level3, unlocked: false },
-    { id: 4, name: "Level 4 (Boy oh boy where do I even begin. Lebron... honey, my pookie bear. I have loved you ever since I first laid eyes on you. The way you drive into the paint and strike fear into your enemies eyes. Your silky smooth touch around the rim, and that gorgeous jumpshot. I would do anything for you.)", component: Level4, unlocked: false },
+    { id: 1, name: 'Level 1 (Baby Gronk)', component: Level1, unlocked: true, isBeaten: false },
+    { id: 2, name: 'Level 2 (Sigma)', component: Level2, unlocked: false, isBeaten: false }, 
+    { id: 3, name: "Level 3 (Those who know 💀)", component: Level3, unlocked: false, isBeaten: false },
+    { id: 4, name: "Level 4 (Boy oh boy where do I even begin. Lebron... honey, my pookie bear. I have loved you ever since I first laid eyes on you. The way you drive into the paint and strike fear into your enemies eyes. Your silky smooth touch around the rim, and that gorgeous jumpshot. I would do anything for you.)", component: Level4, unlocked: false, isBeaten: false },
   ])
 
   const userProgress = useQuery(api.users.getUserByClerkId, { 
@@ -44,38 +45,54 @@ export default function Home() {
     if (userProgress?.progress) {
       setLevels(prev => prev.map(level => {
         const savedLevel = userProgress.progress?.find(p => p.id === level.id);
-        return savedLevel ? { ...level, unlocked: savedLevel.unlocked } : level;
+        return savedLevel ? { 
+          ...level, 
+          unlocked: savedLevel.unlocked,
+          isBeaten: savedLevel.isBeaten 
+        } : level;
       }));
+      
+      const lastLevel = userProgress.progress[userProgress.progress.length - 1];
+      if (lastLevel?.isBeaten) {
+        setLastLevelBeaten(true);
+      }
     }
   }, [userProgress]);
 
   const handleLevelComplete = async () => {
-    const nextLevelIndex = currentLevel !== null ? currentLevel : 0
-    if (nextLevelIndex === levels.length - 1) {
+    const nextLevelIndex = currentLevel !== null ? currentLevel : 0;
+    const isLastLevel = nextLevelIndex === levels.length - 1;
+    
+    const updatedLevels = levels.map((level, index) => {
+      if (index === nextLevelIndex) {
+        return { ...level, unlocked: true, isBeaten: true };
+      }
+      if (index === nextLevelIndex + 1) {
+        return { ...level, unlocked: true };
+      }
+      return level;
+    });
+    
+    setLevels(updatedLevels);
+    
+    if (isLastLevel) {
       setLastLevelBeaten(true);
     }
-    if (nextLevelIndex < levels.length - 1) {
-      const updatedLevels = levels.map((level, index) => {
-        if (index === nextLevelIndex + 1) {
-          return { ...level, unlocked: true }
-        }
-        return level
-      })
-      setLevels(updatedLevels)
-      
-      if (isSignedIn && user) {
-        await updateProgress({
-          clerkId: user.id,
-          progress: updatedLevels.map(({ id, name, unlocked }) => ({
-            id,
-            name,
-            unlocked
-          }))
-        });
-      }
+    
+    if (isSignedIn && user) {
+      await updateProgress({
+        clerkId: user.id,
+        progress: updatedLevels.map(({ id, name, unlocked, isBeaten }) => ({
+          id,
+          name,
+          unlocked,
+          isBeaten
+        }))
+      });
     }
-    setCurrentLevel(null) 
-  }
+    
+    setCurrentLevel(null);
+  };
 
   const handleHome = () => {
     setCurrentLevel(null)
@@ -84,7 +101,6 @@ export default function Home() {
 
   if (currentLevel !== null && currentLevel < levels.length) {
     const LevelComponent = levels[currentLevel].component
-    console.log(levels[currentLevel].component)
     return <LevelComponent 
       onComplete={handleLevelComplete} 
       onHome={handleHome}
@@ -126,9 +142,7 @@ export default function Home() {
         <div className="w-full max-w-4xl">
           <div className="grid grid-cols-1 gap-6">
             {levels.map((level, index) => {
-              const isBeaten = index === levels.length - 1 
-                ? lastLevelBeaten 
-                : (index < levels.length - 1 && levels[index + 1].unlocked);
+              const isBeaten = level.isBeaten;
               
               return (
                 <div 
