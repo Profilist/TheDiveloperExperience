@@ -210,7 +210,7 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
           score: normalizedScore,
           userId: convexUserId,
           levelId: 4,
-          distanceFromCenter: distanceFromCenter,
+          distanceFromCenter: Math.round(distanceFromCenter),
         });
       }
     }

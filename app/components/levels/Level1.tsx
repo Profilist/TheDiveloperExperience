@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import Leaderboard from '../Leaderboard';
+import Image from 'next/image';
 
 const OSCILLATION_SPEED = 3
 const FRAME_RATE = 60

@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import Leaderboard from '../Leaderboard';
+import Image from 'next/image';
 
 const OSCILLATION_SPEED = 40    // Blue
 const OSCILLATION_SPEED_2 = 15  // Red
@@ -18,6 +19,9 @@ interface Level3Props {
   onComplete: () => void;
   onHome: () => void;
 }
+
+const MUSIC_SEQUENCE_SUCCESS = ['sounds/incredible.mp3', 'sounds/sakamoto.mp3', 'sounds/robot.mp3']
+const MUSIC_SEQUENCE_FAIL = ['sounds/sneaky.mp3', 'sounds/distorted.mp3']
 
 export default function Level3({ onComplete, onHome }: Level3Props) {
   const { user, isSignedIn } = useUser();
@@ -39,6 +43,8 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
   const [direction4, setDirection4] = useState(1)
   const [direction5, setDirection5] = useState(1)
   const [score, setScore] = useState<[number, number] | null>(null)
+  const [attemptCount, setAttemptCount] = useState(0)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   
   const containerRef = useRef<HTMLDivElement>(null)
   const movingDivRef = useRef<HTMLDivElement>(null)
@@ -46,6 +52,19 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
   const movingDivRef3 = useRef<HTMLDivElement>(null)
   const movingDivRef4 = useRef<HTMLDivElement>(null)
   const movingDivRef5 = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    audioRef.current = new Audio('/sounds/incredible.mp3')
+    audioRef.current.loop = true
+    audioRef.current.volume = 0.1
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.src = ''
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (gameState === 'playing') {
@@ -147,6 +166,16 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
     setDirection3(1)
     setDirection4(1)
     setDirection5(1)
+    
+    console.log(audioRef.current)
+    if (audioRef.current) {
+      audioRef.current.pause()
+      const successIndex = attemptCount % MUSIC_SEQUENCE_SUCCESS.length
+      audioRef.current.src = `/${MUSIC_SEQUENCE_SUCCESS[successIndex]}`
+      audioRef.current.loop = true
+      audioRef.current.play()
+    }
+    
     setGameState('playing')
   }
 
@@ -160,6 +189,15 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
       const maxDistance = containerWidth / 2
       const normalizedScore = Math.round((1 - distanceFromCenter / maxDistance) * 100)
       setScore([normalizedScore, Math.round(distanceFromCenter)])
+
+      if (audioRef.current && normalizedScore < 95) {
+        audioRef.current.pause()
+        const failIndex = Math.floor(attemptCount / MUSIC_SEQUENCE_SUCCESS.length) % MUSIC_SEQUENCE_FAIL.length
+        audioRef.current.src = `/${MUSIC_SEQUENCE_FAIL[failIndex]}`
+        audioRef.current.loop = true
+        audioRef.current.play()
+        setAttemptCount(prev => prev + 1)
+      }
 
       if (isSignedIn && user) {
         let convexUserId = getUser?._id;
@@ -240,6 +278,16 @@ export default function Level3({ onComplete, onHome }: Level3Props) {
             )}
           </>
         )}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Image 
+          src={gameState === 'playing' || gameState === 'idle' || (score && score[0] >= 95) ? "/thosewhoknow.jpg" : "/knows.jpg"}
+          alt=""
+          width={200}
+          height={200}
+          priority
+        />
       </div>
 
       <Leaderboard levelId={3} />
