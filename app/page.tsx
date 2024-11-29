@@ -29,7 +29,7 @@ export default function Home() {
   const [currentLevel, setCurrentLevel] = useState<number | null>(null)
   const [levels, setLevels] = useState<LevelInfo[]>([
     { id: 1, name: "Level 1 (From the screen 📺 to the ring 🥊 to the pen 🖊️ to the king 👑! Where's my crown 👑 🤷‍♂️ that's my bling 💍)", component: Level1, unlocked: true, isBeaten: false },
-    { id: 2, name: 'Level 2 (Sigma)', component: Level2, unlocked: false, isBeaten: false }, 
+    { id: 2, name: 'Level 2 (Sigma 🗿)', component: Level2, unlocked: false, isBeaten: false }, 
     { id: 3, name: "Level 3 (Those who know 💀)", component: Level3, unlocked: false, isBeaten: false },
     { id: 4, name: "Level 4 (Boy oh boy where do I even begin. Lebron... honey, my pookie bear. I have loved you ever since I first laid eyes on you. The way you drive into the paint and strike fear into your enemies eyes. Your silky smooth touch around the rim, and that gorgeous jumpshot. I would do anything for you.)", component: Level4, unlocked: false, isBeaten: false },
   ])
@@ -140,7 +140,7 @@ export default function Home() {
         <div className={`max-w-2xl w-full text-center mb-12 ${!lastLevelBeaten ? 'translate-x-40' : ''}`}>
           <h1 className="text-4xl font-bold mb-4">
             {lastLevelBeaten 
-              ? "Wow! Guess you are a real developer!"
+              ? "You're my skibidi diveloper 💖"
               : "Are you a real developer if you can't center a div?"}
           </h1>
         </div>
@@ -164,7 +164,7 @@ export default function Home() {
                     ${!isBeaten && index === 3 ? `-translate-x-[80px]` : ''}
                   `}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-8">
                     <h2 className="text-2xl font-semibold">{level.name}:</h2>
                     <Button
                       onClick={() => setCurrentLevel(index)}
