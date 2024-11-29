@@ -30,6 +30,23 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
   const [score, setScore] = useState<[number, number] | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const movingDivRef = useRef<HTMLDivElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const victoryAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio('/sounds/METAMORPHOSIS.mp3');
+    victoryAudioRef.current = new Audio('/sounds/TAKA SOLTA.mp3');
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      if (victoryAudioRef.current) {
+        victoryAudioRef.current.pause();
+        victoryAudioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (gameState === 'playing') {
@@ -56,10 +73,41 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
   }, [gameState, direction])
 
   const startGame = () => {
-    setScore(null)
-    setPosition(0)
-    setDirection(1)
-    setGameState('playing')
+    setScore(null);
+    setPosition(0);
+    setDirection(1);
+    setGameState('playing');
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.play();
+    }
+    if (victoryAudioRef.current) {
+      victoryAudioRef.current.pause();
+      victoryAudioRef.current.currentTime = 0;
+    }
+  }
+
+  const handleHome = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (victoryAudioRef.current) {
+      victoryAudioRef.current.pause();
+      victoryAudioRef.current.currentTime = 0;
+    }
+    onHome();
+  }
+
+  const handleComplete = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (victoryAudioRef.current) {
+      victoryAudioRef.current.pause();
+      victoryAudioRef.current.currentTime = 0;
+    }
+    onComplete();
   }
 
   const stopGame = async () => {
@@ -91,6 +139,16 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
           distanceFromCenter: Math.round(distanceFromCenter),
         });
       }
+
+      if (normalizedScore >= 95) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        if (victoryAudioRef.current) {
+          victoryAudioRef.current.play();
+        }
+      }
     }
   }
 
@@ -115,7 +173,7 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
         />
       </div>
       <div className="flex justify-center gap-4">
-        <Button onClick={onHome} variant="outline">Home</Button>
+        <Button onClick={handleHome} variant="outline">Home</Button>
         {gameState === 'idle' && (
           <Button onClick={startGame}>Start Game</Button>
         )}
@@ -126,12 +184,28 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
           <>
             <Button onClick={startGame}>Try Again</Button>
             {score && score[0] >= 95 && (
-              <Button onClick={onComplete} variant="secondary">
+              <Button onClick={handleComplete} variant="secondary">
                 Next Level
               </Button>
             )}
           </>
         )}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Image 
+          src={
+            gameState === 'playing' || gameState === 'idle' 
+              ? "/bateman.jpg"
+              : score && score[0] >= 95
+                ? "/sigma.jpg" 
+                : "/damn.jpg"
+          }
+          alt=""
+          width={200}
+          height={200}
+          priority
+        />
       </div>
 
       <Leaderboard levelId={2} />
