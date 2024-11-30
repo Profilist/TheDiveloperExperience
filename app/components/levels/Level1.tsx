@@ -140,7 +140,7 @@ export default function Level1({ onComplete, onHome }: Level1Props) {
       <h1 className="text-2xl font-bold text-center mb-4">Level 1</h1>
       <div className="mb-4 text-center">
         {gameState === 'idle' && <p>Click stop when the div is centered</p>}
-        {gameState === 'playing' && <p>From the screen 📺 to the ring 🥊 to the pen 🖊️ to the king 👑! Where's my crown 👑 🤷‍♂️ that's my bling 💍</p>}
+        {gameState === 'playing' && <p>From the screen 📺 to the ring 🥊 to the pen 🖊️ to the king 👑! Where&apos;s my crown 👑 🤷‍♂️ that&apos;s my bling 💍</p>}
         {gameState === 'scored' && score && (
           <p>Your score: {score[0]}% ({score[1]}px from center)</p>
         )}

@@ -246,7 +246,7 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
     return () => {
       stopAllAudio();
     };
-  }, []);
+  }, [stopAllAudio]);
 
   return (
     <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">

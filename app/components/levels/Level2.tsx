@@ -157,7 +157,7 @@ export default function Level2({ onComplete, onHome }: Level2Props) {
       <h1 className="text-2xl font-bold text-center mb-4">Level 2</h1>
       <div className="mb-4 text-center">
         {gameState === 'idle' && <p>Was that too easy?</p>}
-        {gameState === 'playing' && <p>There's no way this is stopping you right...</p>}
+        {gameState === 'playing' && <p>There&apos;s no way this is stopping you right...</p>}
         {gameState === 'scored' && score && (
           <p>Your score: {score[0]}% ({score[1]}px from center)</p>
         )}
