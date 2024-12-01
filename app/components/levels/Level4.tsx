@@ -7,7 +7,6 @@ import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import Leaderboard from "../Leaderboard";
 import Image from "next/image";
-import useSound from "use-sound";
 
 const OSCILLATION_SPEED = 40; // Blue
 const OSCILLATION_SPEED_2 = 70; // Red
@@ -51,26 +50,7 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
   const [direction5, setDirection5] = useState(1);
   const [score, setScore] = useState<[number, number] | null>(null);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
-  const [play1, { stop: stop1 }] = useSound(AUDIO_FILES[0], {
-    volume: 0.25,
-    loop: true,
-  });
-  const [play2, { stop: stop2 }] = useSound(AUDIO_FILES[1], {
-    volume: 0.25,
-    loop: true,
-  });
-  const [play3, { stop: stop3 }] = useSound(AUDIO_FILES[2], {
-    volume: 0.25,
-    loop: true,
-  });
-  const [play4, { stop: stop4 }] = useSound(AUDIO_FILES[3], {
-    volume: 0.25,
-    loop: true,
-  });
-  const [play5, { stop: stop5 }] = useSound(AUDIO_FILES[4], {
-    volume: 0.25,
-    loop: true,
-  });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -174,12 +154,11 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
     }
   }, [gameState, direction, direction2, direction3, direction4, direction5]);
 
-  const stopAllAudio = () => {
-    stop1();
-    stop2();
-    stop3();
-    stop4();
-    stop5();
+  const stopCurrentAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
   };
 
   const startGame = () => {
@@ -197,9 +176,13 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
     setGameState("playing");
 
     try {
-      stopAllAudio();
-      const plays = [play1, play2, play3, play4, play5];
-      plays[currentAudioIndex]();
+      stopCurrentAudio();
+      audioRef.current = new Audio(AUDIO_FILES[currentAudioIndex]);
+      audioRef.current.volume = 0.25;
+      audioRef.current.loop = true;
+      audioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
       setCurrentAudioIndex((prev) => (prev + 1) % AUDIO_FILES.length);
     } catch (error) {
       console.error("Error playing audio:", error);
@@ -208,7 +191,7 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
 
   const stopGame = async () => {
     if (gameState === "playing") {
-      stopAllAudio();
+      stopCurrentAudio();
       console.log("Stopping music...");
       setGameState("scored");
       const containerWidth = containerRef.current?.clientWidth || 0;
@@ -242,11 +225,21 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
     }
   };
 
+  const handleHome = () => {
+    stopCurrentAudio();
+    onHome();
+  };
+
+  const handleComplete = () => {
+    stopCurrentAudio();
+    onComplete();
+  };
+
   useEffect(() => {
     return () => {
-      stopAllAudio();
+      stopCurrentAudio();
     };
-  }, [stopAllAudio]);
+  }, []);
 
   return (
     <div className="w-full max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
@@ -292,7 +285,7 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
         />
       </div>
       <div className="flex justify-center gap-4">
-        <Button onClick={onHome} variant="outline">
+        <Button onClick={handleHome} variant="outline">
           Home
         </Button>
         {gameState === "idle" && (
@@ -303,7 +296,7 @@ export default function Level4({ onComplete, onHome }: Level4Props) {
           <>
             <Button onClick={startGame}>Try Again</Button>
             {score && score[0] >= 92 && (
-              <Button onClick={onComplete} variant="secondary">
+              <Button onClick={handleComplete} variant="secondary">
                 Next Level
               </Button>
             )}
